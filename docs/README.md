@@ -1,13 +1,14 @@
 # SmartRename
 
-**Batch file renaming for macOS — simple, powerful, reversible.**
+**Cross-platform batch file renaming — simple, powerful, reversible.**
 
 [![Python](https://img.shields.io/badge/Python-3.9+-blue.svg)](https://python.org)
 [![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
+[![Platform](https://img.shields.io/badge/Platform-macOS%20|%20Windows%20|%20Linux-lightgrey.svg)]()
 
 ## Overview
 
-SmartRename is a command-line tool for batch renaming files on macOS. It supports 6 renaming patterns with full undo capability through session history.
+SmartRename is a command-line tool for batch renaming files on macOS, Windows, and Linux. It supports 6 renaming patterns with full undo capability through session history.
 
 **Features:**
 - 6 renaming modes: sequence, date, replace, lowercase, uppercase, clean
@@ -16,19 +17,25 @@ SmartRename is a command-line tool for batch renaming files on macOS. It support
 - Full undo support with history tracking
 - Recursive directory processing
 - Glob pattern filtering
+- **Cross-platform**: Works on macOS, Windows, and Linux
+- **Case-sensitive handling**: Properly handles case-only renames on case-insensitive filesystems (macOS APFS, Windows NTFS)
 
 ## Installation
 
 ```bash
 # Quick install
+pip install smartrename
+
+# Or from source
+git clone https://github.com/Francisezhang/smartrename
 cd smartrename
 pip install -e .
-
-# Or with setup script
-./setup.sh
 ```
 
-## Quick Start
+## Requirements
+
+- Python 3.9+
+- Works on: macOS, Windows 10+, Linux (Ubuntu, Debian, Fedora, etc.)
 
 ```bash
 # Preview files
@@ -112,7 +119,7 @@ All operations are saved to `~/.smartrename/history.json`. Use `smartrename undo
 ## Requirements
 
 - Python 3.9+
-- macOS
+## Quick Start
 
 ## License
 

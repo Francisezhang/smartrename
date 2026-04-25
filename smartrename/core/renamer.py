@@ -1,6 +1,7 @@
-"""Core renaming engine with conflict handling and rollback."""
+"""Core renaming engine with conflict handling and rollback - Cross-platform."""
 
 import os
+import platform
 import shutil
 from pathlib import Path
 from typing import Dict, List, Optional, Callable
@@ -11,6 +12,44 @@ from .patterns import get_pattern_func
 from .undo import add_session
 
 console = Console()
+
+# Platform detection
+CURRENT_PLATFORM = platform.system()
+IS_MACOS = CURRENT_PLATFORM == "Darwin"
+IS_WINDOWS = CURRENT_PLATFORM == "Windows"
+IS_LINUX = CURRENT_PLATFORM == "Linux"
+
+
+def is_case_insensitive_filesystem(path: Path) -> bool:
+    """
+    Check if the filesystem is case-insensitive.
+
+    macOS APFS/HFS+ and Windows NTFS are typically case-insensitive.
+    Linux ext4 and most Unix filesystems are case-sensitive.
+    """
+    # macOS and Windows are typically case-insensitive
+    if IS_MACOS or IS_WINDOWS:
+        return True
+
+    # Linux: test by creating temp files
+    if IS_LINUX:
+        try:
+            test_dir = path if path.is_dir() else path.parent
+            test_lower = test_dir / "_test_case_lower_tmp"
+            test_upper = test_dir / "_TEST_CASE_LOWER_TMP"
+
+            # Create lower case file
+            test_lower.touch()
+            # Check if upper case "exists" (case-insensitive)
+            result = test_upper.exists()
+            # Cleanup
+            test_lower.unlink()
+            return result
+        except Exception:
+            # Default to case-sensitive on Linux
+            return False
+
+    return False
 
 
 def collect_files(
@@ -171,15 +210,21 @@ def execute_rename(
             new_path = Path(op["new_path"])
 
             try:
-                # Handle case-insensitive filesystem (macOS APFS/HFS+)
-                # When only case changes, use two-step rename via temp file
+                # Handle case-only changes on case-insensitive filesystems
+                # (macOS APFS/HFS+, Windows NTFS)
+                same_parent = old_path.parent == new_path.parent
                 old_name_lower = old_path.name.lower()
                 new_name_lower = new_path.name.lower()
-                same_parent = old_path.parent == new_path.parent
+                is_case_only_change = (
+                    same_parent
+                    and old_name_lower == new_name_lower
+                    and old_path.name != new_path.name
+                )
 
-                if same_parent and old_name_lower == new_name_lower and old_path.name != new_path.name:
+                if is_case_only_change and is_case_insensitive_filesystem(old_path):
                     # Case-only change on case-insensitive filesystem
-                    temp_name = f"_temp_rename_{old_path.name}"
+                    # Use two-step rename via temp file
+                    temp_name = f"_temp_rename_{os.getpid()}_{old_path.name}"
                     temp_path = old_path.parent / temp_name
                     old_path.rename(temp_path)
                     temp_path.rename(new_path)
