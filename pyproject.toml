@@ -1,0 +1,27 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "smartrename"
+version = "1.0.0"
+description = "Batch file renaming for macOS — simple, powerful, reversible"
+requires-python = ">=3.9"
+dependencies = ["typer[all]>=0.12.0", "rich>=13.0.0"]
+readme = "docs/README.md"
+
+[project.optional-dependencies]
+dev = ["pytest>=7.0.0", "pytest-cov>=4.0.0"]
+
+[project.scripts]
+smartrename = "smartrename.main:app"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["smartrename*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+python_functions = ["test_*"]
+addopts = "-v --tb=short"
